@@ -54,6 +54,7 @@ class ProjectDashboard:
                 marker=dict(
                     color=self.COLOR_SCHEME[status][0],
                     line=dict(color=self.COLOR_SCHEME[status][1], width=1.5),
+                ),
                 opacity=0.9,
                 text=[f"{x:,}" for x in df_filtered["采集数量"]],
                 textposition="outside",
