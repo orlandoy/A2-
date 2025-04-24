@@ -6,23 +6,21 @@ import os
 
 class ProjectDashboard:
     def __init__(self):
-        # 配色方案
         self.COLOR_SCHEME = {
-            "已完成": ["#2ECC71", "#27AE60"],
             "进行中": ["#E74C3C", "#C0392B"],
-            "background": "#F8F9FA",
-            "card": "#FFFFFF",
-            "text": "#2C3E50",
-            "highlight": "#3498DB"
+            "已完成": ["#2ECC71", "#27AE60"],
+            "background": "#0E1A2B",
+            "card": "#1C2C3C",
+            "text": "#ECF0F1",
+            "highlight": "#00BFFF"
         }
 
-        # 初始化Dash应用
         self.app = dash.Dash(__name__, external_stylesheets=[
             'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
             'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap'
         ])
 
-        self.app.title = "智元A2项目"
+        self.app.title = "智元A2项目未来看板"
         self.projects = self.load_projects()
         self.df = pd.DataFrame(self.projects)
         self.app.layout = self.create_layout()
@@ -45,12 +43,12 @@ class ProjectDashboard:
                 name=status,
                 marker=dict(
                     color=self.COLOR_SCHEME[status][0],
-                    line=dict(color=self.COLOR_SCHEME[status][1], width=1.5),
+                    line=dict(color=self.COLOR_SCHEME[status][1], width=2.5),
                 ),
-                opacity=0.9,
+                opacity=0.95,
                 text=[f"{x:,}" for x in df_filtered["采集数量"]],
                 textposition="outside",
-                width=0.6
+                width=0.5
             ))
 
         avg_value = self.df["采集数量"].mean()
@@ -58,20 +56,21 @@ class ProjectDashboard:
         fig.update_layout(
             plot_bgcolor=self.COLOR_SCHEME["card"],
             paper_bgcolor=self.COLOR_SCHEME["background"],
-            font=dict(family="Roboto", size=12),
-            xaxis=dict(tickangle=-30, gridcolor="#EDEDED"),
-            yaxis=dict(gridcolor="#EDEDED", tickformat=","),
-            hoverlabel=dict(bgcolor="white", font_size=12),
-            legend=dict(orientation="h", y=1.1),
-            margin=dict(t=30),
-            transition={"duration": 300}
+            font=dict(family="Roboto", size=13, color=self.COLOR_SCHEME["text"]),
+            xaxis=dict(tickangle=-20, gridcolor="#34495E", showgrid=False),
+            yaxis=dict(gridcolor="#34495E", tickformat=","),
+            hoverlabel=dict(bgcolor="#2C3E50", font_size=12, font_color="white"),
+            legend=dict(orientation="h", y=1.1, font=dict(color=self.COLOR_SCHEME["text"])),
+            margin=dict(t=40),
+            transition={"duration": 500}
         )
 
         fig.add_hline(
             y=avg_value,
             line_dash="dot",
-            line_color="#7F8C8D",
-            annotation_text=f"平均值: {avg_value:,.0f}"
+            line_color="#BDC3C7",
+            annotation_text=f"平均值: {avg_value:,.0f}",
+            annotation_font_color=self.COLOR_SCHEME["text"]
         )
 
         return fig
@@ -81,22 +80,24 @@ class ProjectDashboard:
             className="card",
             style={
                 "backgroundColor": self.COLOR_SCHEME["card"],
-                "borderRadius": "10px",
+                "borderRadius": "16px",
                 "padding": "20px",
-                "boxShadow": "0 4px 6px rgba(0,0,0,0.1)",
+                "boxShadow": "0 8px 20px rgba(0,0,0,0.3)",
                 "margin": "10px",
                 "flex": 1,
-                "minWidth": "200px"
+                "minWidth": "220px",
+                "transition": "transform 0.3s ease",
+                ":hover": {"transform": "scale(1.05)"}
             },
             children=[
                 html.Div([
                     html.I(className=f"fas fa-{icon}", 
-                           style={"color": color, "fontSize": "24px"}),
-                    html.H3(title, style={"marginLeft": "10px"})
+                          style={"color": color, "fontSize": "26px"}),
+                    html.H3(title, style={"marginLeft": "12px", "color": self.COLOR_SCHEME["text"]})
                 ], style={"display": "flex", "alignItems": "center"}),
                 html.H2(
                     f"{value:,}",
-                    style={"color": color, "marginTop": "10px", "fontSize": "28px"}
+                    style={"color": color, "marginTop": "10px", "fontSize": "30px"}
                 )
             ]
         )
@@ -106,25 +107,30 @@ class ProjectDashboard:
             id="data-table",
             columns=[{"name": col, "id": col} for col in self.df.columns],
             data=self.df.to_dict("records"),
-            style_table={"overflowX": "auto", "borderRadius": "8px"},
+            style_table={"overflowX": "auto", "borderRadius": "12px"},
             style_header={
                 "backgroundColor": self.COLOR_SCHEME["highlight"],
                 "color": "white",
-                "fontWeight": "bold"
+                "fontWeight": "bold",
+                "fontSize": "16px",
+                "border": "none"
             },
             style_cell={
                 "textAlign": "left",
-                "padding": "12px",
-                "fontFamily": "Roboto"
+                "padding": "14px",
+                "fontFamily": "Roboto",
+                "backgroundColor": self.COLOR_SCHEME["card"],
+                "color": self.COLOR_SCHEME["text"]
             },
             style_data_conditional=[
-                {"if": {"row_index": "odd"}, "backgroundColor": "rgba(240, 240, 240, 0.5)"},
+                {"if": {"row_index": "odd"}, "backgroundColor": "#243447"},
                 {"if": {"filter_query": "{状态} = '已完成'"}, "color": self.COLOR_SCHEME["已完成"][0]},
                 {"if": {"filter_query": "{状态} = '进行中'"}, "color": self.COLOR_SCHEME["进行中"][0]}
             ],
             filter_action="native",
             sort_action="native",
-            page_size=10
+            page_size=10,
+            style_as_list_view=True
         )
 
     def create_layout(self):
@@ -132,43 +138,43 @@ class ProjectDashboard:
             style={
                 "backgroundColor": self.COLOR_SCHEME["background"],
                 "minHeight": "100vh",
-                "padding": "20px",
+                "padding": "30px",
                 "fontFamily": "Roboto"
             },
             children=[
                 html.H1(
-                    "A2项目数据采集看板",
+                    "A2项目数据采集未来看板",
                     style={
                         "textAlign": "center",
                         "color": self.COLOR_SCHEME["text"],
-                        "marginBottom": "30px"
+                        "marginBottom": "40px"
                     }
                 ),
 
                 html.Div([
                     self.create_card("总采集量", self.df["采集数量"].sum(), 
-                                    "database", self.COLOR_SCHEME["highlight"]),
+                                   "database", self.COLOR_SCHEME["highlight"]),
                     self.create_card("已完成项目", len(self.df[self.df["状态"] == "已完成"]), 
-                                    "check-circle", self.COLOR_SCHEME["已完成"][0]),
+                                   "check-circle", self.COLOR_SCHEME["已完成"][0]),
                     self.create_card("进行中项目", len(self.df[self.df["状态"] == "进行中"]), 
-                                    "spinner", self.COLOR_SCHEME["进行中"][0])
-                ], style={"display": "flex", "flexWrap": "wrap", "marginBottom": "30px"}),
+                                   "spinner", self.COLOR_SCHEME["进行中"][0])
+                ], style={"display": "flex", "flexWrap": "wrap", "marginBottom": "40px"}),
 
                 html.Div(
                     className="chart-card",
                     style={
                         "backgroundColor": self.COLOR_SCHEME["card"],
-                        "borderRadius": "10px",
+                        "borderRadius": "16px",
                         "padding": "20px",
-                        "boxShadow": "0 4px 6px rgba(0,0,0,0.1)",
-                        "marginBottom": "30px"
+                        "boxShadow": "0 8px 20px rgba(0,0,0,0.3)",
+                        "marginBottom": "40px"
                     },
                     children=[
                         dcc.Graph(
                             id="collection-chart",
                             figure=self.create_bar_chart(),
                             config={"displayModeBar": False},
-                            style={"height": "450px"}
+                            style={"height": "480px"}
                         )
                     ]
                 ),
@@ -177,9 +183,9 @@ class ProjectDashboard:
                     className="table-card",
                     style={
                         "backgroundColor": self.COLOR_SCHEME["card"],
-                        "borderRadius": "10px",
+                        "borderRadius": "16px",
                         "padding": "20px",
-                        "boxShadow": "0 4px 6px rgba(0,0,0,0.1)"
+                        "boxShadow": "0 8px 20px rgba(0,0,0,0.3)"
                     },
                     children=[self.create_data_table()]
                 )
