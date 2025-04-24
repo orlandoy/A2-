@@ -16,11 +16,14 @@ class ProjectDashboard:
             "highlight": "#3498DB"
         }
         
-        # 初始化Dash应用
+        # 初始化Dash应用，并修改网页标题
         self.app = dash.Dash(__name__, external_stylesheets=[
             'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
             'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap'
         ])
+        
+        # 修改页面标题
+        self.app.title = "A2项目数据看板"  # 将这个名称替换为您想要的名称
         
         # 加载项目数据
         self.projects = self.load_projects()
@@ -148,7 +151,7 @@ class ProjectDashboard:
             },
             children=[
                 html.H1(
-                    "A2项目数据采集看板",
+                    "A2项目数据采集看板",  # 这里可以修改为您希望显示的名称
                     style={
                         "textAlign": "center",
                         "color": self.COLOR_SCHEME["text"],
