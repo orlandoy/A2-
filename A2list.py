@@ -20,7 +20,7 @@ class ProjectDashboard:
             'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap'
         ])
 
-        self.app.title = "智元A2项目未来看板"
+        self.app.title = "智元A2项目"
         self.projects = self.load_projects()
         self.df = pd.DataFrame(self.projects)
         self.app.layout = self.create_layout()
