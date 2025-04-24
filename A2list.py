@@ -190,6 +190,7 @@ class ProjectDashboard:
     def run(self, debug=True, port=8050):
         self.app.run(debug=debug, port=port)
 
-if __name__ == "__main__":
-    dashboard = ProjectDashboard()
-    dashboard.run()
+import os
+port = int(os.environ.get("PORT", 8050))
+self.app.run(debug=debug, host="0.0.0.0", port=port)
+
