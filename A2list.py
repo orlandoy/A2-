@@ -23,7 +23,7 @@ class ProjectDashboard:
         ])
         
         # 修改页面标题
-        self.app.title = "A2项目数据看板"  # 将这个名称替换为您想要的名称
+        self.app.title = "A2项目"  # 将这个名称替换为您想要的名称
         
         # 加载项目数据
         self.projects = self.load_projects()
