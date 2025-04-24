@@ -2,10 +2,11 @@ import dash
 from dash import dcc, html, dash_table
 import plotly.graph_objects as go
 import pandas as pd
-from datetime import datetime
+import os
 
 class ProjectDashboard:
     def __init__(self):
+        # 初始化配置
         self.COLOR_SCHEME = {
             "已完成": ["#2ECC71", "#27AE60"],
             "未完成": ["#E74C3C", "#C0392B"],
@@ -15,17 +16,21 @@ class ProjectDashboard:
             "highlight": "#3498DB"
         }
         
+        # 初始化Dash应用
         self.app = dash.Dash(__name__, external_stylesheets=[
             'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
             'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap'
         ])
         
+        # 加载项目数据
         self.projects = self.load_projects()
         self.df = pd.DataFrame(self.projects)
         
+        # 构建布局
         self.app.layout = self.create_layout()
     
     def load_projects(self):
+        """在这里修改/添加您的项目数据"""
         return [
             {"项目名称": "水果分拣(fruit sort)", "采集时间": '2025.04.03-2025.04.20', 
              "采集数量": 23618, "状态": "已完成", "上传": "未完成"},
@@ -33,9 +38,11 @@ class ProjectDashboard:
              "采集数量": 6792, "状态": "已完成", "上传": "未完成"},
             {"项目名称": "桌面垃圾清理(cleaning)", "采集时间": '2025.04.23-', 
              "采集数量": 1111, "状态": "未完成", "上传": "未完成"},
+            # 在此添加新项目...
         ]
     
     def create_bar_chart(self):
+        """创建美观的柱状图"""
         fig = go.Figure()
         
         for status in self.df["状态"].unique():
@@ -47,7 +54,6 @@ class ProjectDashboard:
                 marker=dict(
                     color=self.COLOR_SCHEME[status][0],
                     line=dict(color=self.COLOR_SCHEME[status][1], width=1.5),
-                ),
                 opacity=0.9,
                 text=[f"{x:,}" for x in df_filtered["采集数量"]],
                 textposition="outside",
@@ -78,6 +84,7 @@ class ProjectDashboard:
         return fig
     
     def create_card(self, title, value, icon, color):
+        """创建指标卡片组件"""
         return html.Div(
             className="card",
             style={
@@ -103,6 +110,7 @@ class ProjectDashboard:
         )
     
     def create_data_table(self):
+        """创建交互式数据表格"""
         return dash_table.DataTable(
             id="data-table",
             columns=[{"name": col, "id": col} for col in self.df.columns],
@@ -129,6 +137,7 @@ class ProjectDashboard:
         )
     
     def create_layout(self):
+        """组装完整布局"""
         return html.Div(
             style={
                 "backgroundColor": self.COLOR_SCHEME["background"],
@@ -146,6 +155,7 @@ class ProjectDashboard:
                     }
                 ),
                 
+                # 指标卡片行
                 html.Div([
                     self.create_card("总采集量", self.df["采集数量"].sum(), 
                                    "database", self.COLOR_SCHEME["highlight"]),
@@ -155,6 +165,7 @@ class ProjectDashboard:
                                    "times-circle", self.COLOR_SCHEME["未完成"][0])
                 ], style={"display": "flex", "flexWrap": "wrap", "marginBottom": "30px"}),
                 
+                # 图表卡片
                 html.Div(
                     className="chart-card",
                     style={
@@ -174,6 +185,7 @@ class ProjectDashboard:
                     ]
                 ),
                 
+                # 表格卡片
                 html.Div(
                     className="table-card",
                     style={
@@ -187,10 +199,12 @@ class ProjectDashboard:
             ]
         )
     
-    def run(self, debug=True, port=8050):
-        self.app.run(debug=debug, port=port)
+    def run(self, debug=True):
+        """运行应用"""
+        port = int(os.environ.get("PORT", 8050))
+        self.app.run(debug=debug, host="0.0.0.0", port=port)
 
-import os
-port = int(os.environ.get("PORT", 8050))
-self.app.run(debug=debug, host="0.0.0.0", port=port)
-
+# 运行服务器
+if __name__ == "__main__":
+    dashboard = ProjectDashboard()
+    dashboard.run(debug=True)
