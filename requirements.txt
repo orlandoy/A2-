@@ -1,0 +1,4 @@
+dash>=3.0.0
+pandas
+plotly
+
