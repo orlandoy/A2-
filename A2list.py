@@ -130,7 +130,7 @@ class ProjectDashboard:
             style_data_conditional=[
                 {"if": {"row_index": "odd"}, "backgroundColor": "rgba(240, 240, 240, 0.5)"},
                 {"if": {"filter_query": "{状态} = '已完成'"}, "color": self.COLOR_SCHEME["已完成"][0]},
-                {"if": {"filter_query": "{状态} = '未完成'"}, "color": self.COLOR_SCHEME["未完成"][0]}
+                {"if": {"filter_query": "{状态} = '进行中'"}, "color": self.COLOR_SCHEME["进行中"][0]}
             ],
             filter_action="native",
             sort_action="native",
