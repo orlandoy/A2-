@@ -9,7 +9,7 @@ class ProjectDashboard:
         # 初始化配置
         self.COLOR_SCHEME = {
             "已完成": ["#2ECC71", "#27AE60"],
-            "未完成": ["#E74C3C", "#C0392B"],
+            "进行中": ["#E74C3C", "#C0392B"],
             "background": "#F8F9FA",
             "card": "#FFFFFF",
             "text": "#2C3E50",
@@ -162,7 +162,7 @@ class ProjectDashboard:
                                    "database", self.COLOR_SCHEME["highlight"]),
                     self.create_card("已完成项目", len(self.df[self.df["状态"] == "已完成"]), 
                                    "check-circle", self.COLOR_SCHEME["已完成"][0]),
-                    self.create_card("未完成项目", len(self.df[self.df["状态"] == "未完成"]), 
+                    self.create_card("未完成项目", len(self.df[self.df["状态"] == "进行中"]), 
                                    "times-circle", self.COLOR_SCHEME["未完成"][0])
                 ], style={"display": "flex", "flexWrap": "wrap", "marginBottom": "30px"}),
                 
