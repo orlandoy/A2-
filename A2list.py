@@ -153,7 +153,7 @@ def create_layout(df):
         },
         children=[
             html.H1(
-                "A2项目数据采集",
+                "智元A2项目采集数据",
                 style={"textAlign": "center", "color": COLOR_SCHEME["text"], "marginBottom": "40px"}
             ),
 
