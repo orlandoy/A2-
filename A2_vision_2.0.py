@@ -7,7 +7,6 @@ import os
 
 class ProjectDashboard:
     def __init__(self):
-        # 🎨 颜色方案
         self.COLOR_SCHEME = {
             "已完成": ["#2ECC71", "#27AE60"],
             "进行中": ["#E67E22", "#D35400"],
@@ -17,22 +16,18 @@ class ProjectDashboard:
             "highlight": "#3498DB"
         }
 
-        # 🚀 初始化 Dash 应用
         self.app = dash.Dash(__name__, external_stylesheets=[
             "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css",
             "https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap"
         ])
         self.app.title = "智元A2项目"
 
-        # 📊 加载数据
         self.projects = self.load_projects()
         self.df = pd.DataFrame(self.projects)
 
-        # 🏗 构建布局
         self.app.layout = self.create_layout()
 
     def load_projects(self):
-        """📥 项目数据"""
         return [
             {"项目名称": "水果分拣(fruit sort)", "采集时间": "2025.04.03-2025.04.20",
              "采集数量": 23618, "状态": "已完成", "上传": "进行中"},
@@ -43,7 +38,6 @@ class ProjectDashboard:
         ]
 
     def create_bar_chart(self):
-        """📈 柱状图组件"""
         fig = go.Figure()
 
         for status in self.df["状态"].unique():
@@ -63,7 +57,6 @@ class ProjectDashboard:
             ))
 
         avg_value = self.df["采集数量"].mean()
-
         fig.add_hline(
             y=avg_value,
             line_dash="dot",
@@ -78,7 +71,7 @@ class ProjectDashboard:
             paper_bgcolor=self.COLOR_SCHEME["background"],
             font=dict(family="Roboto", size=12),
             xaxis=dict(tickangle=-30, gridcolor="#EDEDED"),
-            yaxis=dict(gridcolor="#EDEDED", tickformat=","),
+            yaxis=dict(gridcolor="#EDEDED", tickformat=","), 
             legend=dict(orientation="h", y=1.1),
             margin=dict(t=30),
             hoverlabel=dict(bgcolor="white", font_size=12)
@@ -87,7 +80,6 @@ class ProjectDashboard:
         return fig
 
     def create_card(self, title, value, icon, color):
-        """📦 卡片组件"""
         return html.Div(
             className="card",
             style={
@@ -96,8 +88,9 @@ class ProjectDashboard:
                 "padding": "20px",
                 "boxShadow": "0 4px 6px rgba(0,0,0,0.1)",
                 "margin": "10px",
-                "flex": 1,
-                "minWidth": "200px"
+                "flex": "1 1 250px",
+                "minWidth": "200px",
+                "maxWidth": "100%"
             },
             children=[
                 html.Div([
@@ -112,12 +105,16 @@ class ProjectDashboard:
         )
 
     def create_data_table(self):
-        """📋 表格组件"""
         return dash_table.DataTable(
             id="data-table",
             columns=[{"name": col, "id": col} for col in self.df.columns],
             data=self.df.to_dict("records"),
-            style_table={"overflowX": "auto", "borderRadius": "8px"},
+            style_table={
+                "overflowX": "auto",
+                "borderRadius": "8px",
+                "width": "100%",
+                "maxWidth": "100%"
+            },
             style_header={
                 "backgroundColor": self.COLOR_SCHEME["highlight"],
                 "color": "white",
@@ -142,7 +139,6 @@ class ProjectDashboard:
         )
 
     def create_layout(self):
-        """🖼 页面布局"""
         return html.Div(
             style={
                 "backgroundColor": self.COLOR_SCHEME["background"],
@@ -157,7 +153,6 @@ class ProjectDashboard:
                     "marginBottom": "30px"
                 }),
 
-                # 📊 指标卡片行
                 html.Div([
                     self.create_card("总采集量", self.df["采集数量"].sum(),
                                      "database", self.COLOR_SCHEME["highlight"]),
@@ -165,9 +160,13 @@ class ProjectDashboard:
                                      "check-circle", self.COLOR_SCHEME["已完成"][0]),
                     self.create_card("进行中项目", len(self.df[self.df["状态"] == "进行中"]),
                                      "spinner", self.COLOR_SCHEME["进行中"][0])
-                ], style={"display": "flex", "flexWrap": "wrap", "marginBottom": "30px"}),
+                ], style={
+                    "display": "flex",
+                    "flexWrap": "wrap",
+                    "justifyContent": "space-around",
+                    "marginBottom": "30px"
+                }),
 
-                # 📉 图表卡片
                 html.Div(
                     className="chart-card",
                     style={
@@ -175,24 +174,27 @@ class ProjectDashboard:
                         "borderRadius": "10px",
                         "padding": "20px",
                         "boxShadow": "0 4px 6px rgba(0,0,0,0.1)",
-                        "marginBottom": "30px"
+                        "marginBottom": "30px",
+                        "width": "100%",
+                        "maxWidth": "100%"
                     },
                     children=[dcc.Graph(
                         id="collection-chart",
                         figure=self.create_bar_chart(),
                         config={"displayModeBar": False},
-                        style={"height": "450px"}
+                        style={"height": "450px", "width": "100%"}
                     )]
                 ),
 
-                # 📂 表格卡片
                 html.Div(
                     className="table-card",
                     style={
                         "backgroundColor": self.COLOR_SCHEME["card"],
                         "borderRadius": "10px",
                         "padding": "20px",
-                        "boxShadow": "0 4px 6px rgba(0,0,0,0.1)"
+                        "boxShadow": "0 4px 6px rgba(0,0,0,0.1)",
+                        "width": "100%",
+                        "maxWidth": "100%"
                     },
                     children=[self.create_data_table()]
                 )
@@ -200,12 +202,10 @@ class ProjectDashboard:
         )
 
     def run(self, debug=True):
-        """🚀 启动服务器"""
         port = int(os.environ.get("PORT", 8050))
         self.app.run(debug=debug, host="0.0.0.0", port=port)
 
 
-# 🟢 运行
 if __name__ == "__main__":
     dashboard = ProjectDashboard()
     dashboard.run(debug=True)
