@@ -22,7 +22,7 @@ class ProjectDashboard:
             "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css",
             "https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap"
         ])
-        self.app.title = "A2项目数据看板"
+        self.app.title = "智元A2项目"
 
         # 📊 加载数据
         self.projects = self.load_projects()
