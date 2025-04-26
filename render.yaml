@@ -3,7 +3,8 @@ services:
     name: dash-dashboard
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python main.py
+    startCommand: python3 A2_vision_2.0.py
+
     envVars:
       - key: PORT
         value: 8050
