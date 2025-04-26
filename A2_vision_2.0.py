@@ -1,211 +1,126 @@
 import dash
-from dash import dcc, html, dash_table
-import plotly.graph_objects as go
+from dash import Dash, dcc, html, dash_table, Input, Output, State
+import plotly.express as px
 import pandas as pd
-import os
 
+# 初始化应用
+app = Dash(__name__)
+server = app.server  # 如果后续要部署 Render 或其他平台需要这个
 
-class ProjectDashboard:
-    def __init__(self):
-        self.COLOR_SCHEME = {
-            "已完成": ["#2ECC71", "#27AE60"],
-            "进行中": ["#E67E22", "#D35400"],
-            "background": "#F8F9FA",
-            "card": "#FFFFFF",
-            "text": "#2C3E50",
-            "highlight": "#3498DB"
-        }
+# 初始数据
+initial_data = [
+    {"项目名称": "水果分拣(fruit sort)", "采集时间": "2025.04.03-2025.04.20", "采集数量": 23618, "状态": "已完成", "上传": "进行中"},
+    {"项目名称": "扫码枪扫货(scanning gun)", "采集时间": "2025.04.21-2025.04.22", "采集数量": 6792, "状态": "已完成", "上传": "进行中"},
+    {"项目名称": "桌面垃圾清理(cleaning)", "采集时间": "2025.04.23-", "采集数量": 1111, "状态": "进行中", "上传": "进行中"},
+]
 
-        self.app = dash.Dash(__name__, external_stylesheets=[
-            "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css",
-            "https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap"
-        ])
-        self.app.title = "智元A2项目"
+# 应用布局
+app.layout = html.Div(
+    style={"padding": "20px", "fontFamily": "Arial, sans-serif", "backgroundColor": "#F4F6F9"},
+    children=[
+        html.H1("项目数据管理系统", style={"textAlign": "center", "marginBottom": "30px"}),
+        
+        dcc.Graph(id='bar-chart', style={"marginBottom": "40px"}),
 
-        self.projects = self.load_projects()
-        self.df = pd.DataFrame(self.projects)
+        html.Div([
+            dash_table.DataTable(
+                id='editable-table',
+                columns=[
+                    {"name": "项目名称", "id": "项目名称", "editable": True},
+                    {"name": "采集时间", "id": "采集时间", "editable": True},
+                    {"name": "采集数量", "id": "采集数量", "editable": True, "type": "numeric"},
+                    {"name": "状态", "id": "状态", "editable": True},
+                    {"name": "上传", "id": "上传", "editable": True},
+                ],
+                data=initial_data,
+                editable=True,
+                row_deletable=True,
+                style_table={"overflowX": "auto"},
+                style_cell={
+                    "textAlign": "center",
+                    "padding": "10px",
+                    "backgroundColor": "white",
+                    "border": "1px solid #dee2e6",
+                },
+                style_header={
+                    "backgroundColor": "#007BFF",
+                    "color": "white",
+                    "fontWeight": "bold",
+                    "textAlign": "center"
+                },
+            ),
 
-        self.app.layout = self.create_layout()
+            html.Button(
+                '添加一行',
+                id='add-row-button',
+                n_clicks=0,
+                style={
+                    "marginTop": "15px",
+                    "backgroundColor": "#28a745",
+                    "color": "white",
+                    "border": "none",
+                    "padding": "10px 20px",
+                    "borderRadius": "5px",
+                    "cursor": "pointer",
+                    "fontSize": "16px"
+                }
+            )
+        ], style={"backgroundColor": "white", "padding": "20px", "borderRadius": "10px", "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)"}),
+    ]
+)
 
-    def load_projects(self):
-        return [
-            {"项目名称": "水果分拣(fruit sort)", "采集时间": "2025.04.03-2025.04.20",
-             "采集数量": 23618, "状态": "已完成", "上传": "进行中"},
-            {"项目名称": "扫码枪扫货(scanning gun)", "采集时间": "2025.04.21-2025.04.22",
-             "采集数量": 6792, "状态": "已完成", "上传": "进行中"},
-            {"项目名称": "桌面垃圾清理(cleaning)", "采集时间": "2025.04.23-",
-             "采集数量": 1111, "状态": "进行中", "上传": "进行中"},
-        ]
+# 回调：添加新行
+@app.callback(
+    Output('editable-table', 'data'),
+    Input('add-row-button', 'n_clicks'),
+    State('editable-table', 'data'),
+    State('editable-table', 'columns'),
+    prevent_initial_call=True
+)
+def add_row(n_clicks, rows, columns):
+    # 新增一行空数据
+    rows.append({c['id']: '' for c in columns})
+    return rows
 
-    def create_bar_chart(self):
-        fig = go.Figure()
+# 回调：根据表格动态更新柱状图
+@app.callback(
+    Output('bar-chart', 'figure'),
+    Input('editable-table', 'data')
+)
+def update_chart(data):
+    df = pd.DataFrame(data)
 
-        for status in self.df["状态"].unique():
-            df_filtered = self.df[self.df["状态"] == status]
-            fig.add_trace(go.Bar(
-                x=df_filtered["项目名称"],
-                y=df_filtered["采集数量"],
-                name=status,
-                marker=dict(
-                    color=self.COLOR_SCHEME[status][0],
-                    line=dict(color=self.COLOR_SCHEME[status][1], width=1.5)
-                ),
-                text=[f"{x:,}" for x in df_filtered["采集数量"]],
-                textposition="outside",
-                width=0.6,
-                opacity=0.9
-            ))
-
-        avg_value = self.df["采集数量"].mean()
-        fig.add_hline(
-            y=avg_value,
-            line_dash="dot",
-            line_color="#7F8C8D",
-            annotation_text=f"平均值: {avg_value:,.0f}",
-            annotation_position="top right",
-            annotation_font_color="#7F8C8D"
-        )
-
+    # 检查是否有有效数据
+    if df.empty or "项目名称" not in df.columns or "采集数量" not in df.columns:
+        fig = px.bar(title="暂无数据")
         fig.update_layout(
-            plot_bgcolor=self.COLOR_SCHEME["card"],
-            paper_bgcolor=self.COLOR_SCHEME["background"],
-            font=dict(family="Roboto", size=12),
-            xaxis=dict(tickangle=-30, gridcolor="#EDEDED"),
-            yaxis=dict(gridcolor="#EDEDED", tickformat=","), 
-            legend=dict(orientation="h", y=1.1),
-            margin=dict(t=30),
-            hoverlabel=dict(bgcolor="white", font_size=12)
+            plot_bgcolor="#F4F6F9",
+            paper_bgcolor="#F4F6F9",
+            font=dict(color="#343a40")
         )
-
         return fig
 
-    def create_card(self, title, value, icon, color):
-        return html.Div(
-            className="card",
-            style={
-                "backgroundColor": self.COLOR_SCHEME["card"],
-                "borderRadius": "10px",
-                "padding": "20px",
-                "boxShadow": "0 4px 6px rgba(0,0,0,0.1)",
-                "margin": "10px",
-                "flex": "1 1 250px",
-                "minWidth": "200px",
-                "maxWidth": "100%"
-            },
-            children=[
-                html.Div([
-                    html.I(className=f"fas fa-{icon}", style={
-                        "color": color, "fontSize": "24px"}),
-                    html.H3(title, style={
-                        "marginLeft": "10px", "fontSize": "18px"})
-                ], style={"display": "flex", "alignItems": "center"}),
-                html.H2(f"{value:,}", style={
-                    "color": color, "marginTop": "10px", "fontSize": "28px"})
-            ]
-        )
+    # 创建柱状图
+    fig = px.bar(
+        df,
+        x="项目名称",
+        y="采集数量",
+        text="采集数量",
+        color="状态",
+        color_discrete_sequence=px.colors.qualitative.Safe
+    )
 
-    def create_data_table(self):
-        return dash_table.DataTable(
-            id="data-table",
-            columns=[{"name": col, "id": col} for col in self.df.columns],
-            data=self.df.to_dict("records"),
-            style_table={
-                "overflowX": "auto",
-                "borderRadius": "8px",
-                "width": "100%",
-                "maxWidth": "100%"
-            },
-            style_header={
-                "backgroundColor": self.COLOR_SCHEME["highlight"],
-                "color": "white",
-                "fontWeight": "bold"
-            },
-            style_cell={
-                "textAlign": "left",
-                "padding": "12px",
-                "fontFamily": "Roboto"
-            },
-            style_data_conditional=[
-                {"if": {"row_index": "odd"},
-                 "backgroundColor": "rgba(240, 240, 240, 0.5)"},
-                {"if": {"filter_query": "{状态} = '已完成'"},
-                 "color": self.COLOR_SCHEME["已完成"][0]},
-                {"if": {"filter_query": "{状态} = '进行中'"},
-                 "color": self.COLOR_SCHEME["进行中"][0]}
-            ],
-            filter_action="native",
-            sort_action="native",
-            page_size=10
-        )
+    fig.update_traces(textposition="outside")
+    fig.update_layout(
+        title="各项目采集数量统计",
+        xaxis_tickangle=-30,
+        plot_bgcolor="#F4F6F9",
+        paper_bgcolor="#F4F6F9",
+        font=dict(color="#343a40"),
+        title_x=0.5
+    )
+    return fig
 
-    def create_layout(self):
-        return html.Div(
-            style={
-                "backgroundColor": self.COLOR_SCHEME["background"],
-                "minHeight": "100vh",
-                "padding": "20px",
-                "fontFamily": "Roboto"
-            },
-            children=[
-                html.H1("A2项目数据采集看板", style={
-                    "textAlign": "center",
-                    "color": self.COLOR_SCHEME["text"],
-                    "marginBottom": "30px"
-                }),
-
-                html.Div([
-                    self.create_card("总采集量", self.df["采集数量"].sum(),
-                                     "database", self.COLOR_SCHEME["highlight"]),
-                    self.create_card("已完成项目", len(self.df[self.df["状态"] == "已完成"]),
-                                     "check-circle", self.COLOR_SCHEME["已完成"][0]),
-                    self.create_card("进行中项目", len(self.df[self.df["状态"] == "进行中"]),
-                                     "spinner", self.COLOR_SCHEME["进行中"][0])
-                ], style={
-                    "display": "flex",
-                    "flexWrap": "wrap",
-                    "justifyContent": "space-around",
-                    "marginBottom": "30px"
-                }),
-
-                html.Div(
-                    className="chart-card",
-                    style={
-                        "backgroundColor": self.COLOR_SCHEME["card"],
-                        "borderRadius": "10px",
-                        "padding": "20px",
-                        "boxShadow": "0 4px 6px rgba(0,0,0,0.1)",
-                        "marginBottom": "30px",
-                        "width": "100%",
-                        "maxWidth": "100%"
-                    },
-                    children=[dcc.Graph(
-                        id="collection-chart",
-                        figure=self.create_bar_chart(),
-                        config={"displayModeBar": False},
-                        style={"height": "450px", "width": "100%"}
-                    )]
-                ),
-
-                html.Div(
-                    className="table-card",
-                    style={
-                        "backgroundColor": self.COLOR_SCHEME["card"],
-                        "borderRadius": "10px",
-                        "padding": "20px",
-                        "boxShadow": "0 4px 6px rgba(0,0,0,0.1)",
-                        "width": "100%",
-                        "maxWidth": "100%"
-                    },
-                    children=[self.create_data_table()]
-                )
-            ]
-        )
-
-    def run(self, debug=True):
-        port = int(os.environ.get("PORT", 8050))
-        self.app.run(debug=debug, host="0.0.0.0", port=port)
-
-
-if __name__ == "__main__":
-    dashboard = ProjectDashboard()
-    dashboard.run(debug=True)
+# 运行
+if __name__ == '__main__':
+    app.run(debug=True)
