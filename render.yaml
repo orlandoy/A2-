@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: dash-prod
+    env: python
+    buildCommand: |
+      pip install -r requirements.txt
+      python migrations.py
+    startCommand: gunicorn app:server --bind 0.0.0.0:$PORT --workers 4 --timeout 120
+    envVars:
+      - key: PORT
+        value: 10000
+    disk:
+      name: data_volume
+      mountPath: /var/lib/render
