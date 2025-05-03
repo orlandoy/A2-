@@ -11,11 +11,11 @@ import pandas as pd
 import os
 
 # ===== 数据库配置 =====
-DB_PATH = "/var/lib/render/data.db"  # Render持久化存储路径
+# 替换原来的 DB_PATH
+DB_PATH = "data.db"  # 改为当前目录下的相对路径
 
 def init_db():
-    """初始化数据库表结构"""
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+    """初始化数据库（去掉了目录创建）"""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('''
