@@ -6,10 +6,11 @@ services:
     plan: free
     
     buildCommand: |
-      pip install --upgrade pip &&
-      pip install -r requirements.txt &&
-      mkdir -p assets/dash-renderer &&
-      wget -O assets/dash-renderer/dash_renderer.v1_9_1.min.js https://cdn.jsdelivr.net/npm/dash-renderer@1.9.1/dash_renderer.min.js
+  pip install --upgrade pip &&
+  pip install --force-reinstall numpy==1.24.3 &&  # 强制安装正确版本
+  pip install -r requirements.txt &&
+  mkdir -p assets/dash-renderer &&
+  wget -O assets/dash-renderer/dash_renderer.v1_9_1.min.js https://cdn.jsdelivr.net/npm/dash-renderer@1.9.1/dash_renderer.min.js
     
     startCommand: |
       python -c "from app import init_db; init_db()" &&
