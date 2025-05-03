@@ -73,6 +73,8 @@ def load_initial_data(_):
     return load_data()
 
 # 启动服务
+import os
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8050))
     app.run(debug=False, host="0.0.0.0", port=port)
+
