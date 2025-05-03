@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: dash-app
+    env: python
+    buildCommand: |
+      pip install -r requirements.txt
+      python -c "from app import init_db; init_db()"
+    startCommand: python app.py
+    envVars:
+      - key: PORT
+        value: "10000"
+      - key: HOST
+        value: "0.0.0.0"
