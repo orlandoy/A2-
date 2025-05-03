@@ -126,5 +126,10 @@ def initial_load(_):
 def update_table(data):
     return data
 
+@app.server.route('/assets/<path:path>')
+def serve_assets(path):
+    return flask.send_from_directory('assets', path)
+
 if __name__ == '__main__':
+    print("静态资源路径:", os.path.abspath("assets"))
     app.run_server(debug=True)
