@@ -1,3 +1,5 @@
+import numpy as np
+    print(f"NumPy版本: {np.__version__}")
 import dash
 from dash import Dash, html, dcc, Input, Output, callback, dash_table
 import dash_bootstrap_components as dbc
