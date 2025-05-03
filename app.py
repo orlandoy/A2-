@@ -1,6 +1,7 @@
 from dash import Dash, Input, Output, State, ctx, callback, no_update
 import dash_bootstrap_components as dbc
 from datetime import datetime
+import os
 
 from components.layout import layout
 from components.charts import generate_bar_chart
@@ -17,12 +18,9 @@ app = Dash(
     assets_folder="assets",
     suppress_callback_exceptions=True,
 )
+
 app.title = "生产级数据管理面板"
-
-# 启用重复初始调用全局支持
 app.config.prevent_initial_callbacks = 'initial_duplicate'
-
-# 设置页面布局
 app.layout = layout
 
 # 主回调：处理添加、保存、删除行与图表更新
@@ -58,7 +56,7 @@ def update_components(add_clicks, save_clicks, table_data,
 
     elif trigger == 'data-table':
         if prev_data and len(prev_data) > len(table_data):
-            save_data(table_data)  # 删除行时自动保存
+            save_data(table_data)
         return generate_bar_chart(table_data), no_update, table_data
 
     return no_update, no_update, no_update
@@ -72,13 +70,7 @@ def update_components(add_clicks, save_clicks, table_data,
 def load_initial_data(_):
     return load_data()
 
-if __name__ == "__main__":
-    app.run_server(debug=False)
-import os
-
+# 启动服务
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8050))
     app.run(debug=False, host="0.0.0.0", port=port)
-
-
-
