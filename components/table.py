@@ -1,18 +1,26 @@
-from dash import dash_table, html
+from dash import dash_table
 
 def generate_table(data):
+    if not data:
+        return dash_table.DataTable(
+            id='data-table',
+            columns=[],
+            data=[]
+        )
+
     return dash_table.DataTable(
         id='data-table',
-        columns=[
-            {"name": "项目名称", "id": "项目名称", "editable": True},
-            {"name": "采集时间", "id": "采集时间", "editable": True},
-            {"name": "采集数量", "id": "采集数量", "editable": True, "type": "numeric"},
-            {"name": "状态", "id": "状态", "editable": True},
-            {"name": "上传", "id": "上传", "editable": True},
-        ],
+        columns=[{"name": col, "id": col, "editable": True} for col in data[0].keys()],
         data=data,
         editable=True,
         row_deletable=True,
-        style_table={'overflowX': 'auto'},
-        style_cell={'textAlign': 'center'},
+        style_table={"overflowX": "auto"},
+        style_cell={
+            "textAlign": "center",
+            "padding": "5px",
+        },
+        style_header={
+            "backgroundColor": "#f8f9fa",
+            "fontWeight": "bold"
+        },
     )
