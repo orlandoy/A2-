@@ -53,11 +53,11 @@ app = Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     assets_folder="assets",
-    serve_locally=True,  # 强制本地加载资源
-    assets_ignore=".*\.map$",  # 忽略sourcemap文件
+    assets_url_path="assets",  # 明确指定URL路径
+    serve_locally=True,  # 强制本地加载
     meta_tags=[{
         'http-equiv': 'cache-control',
-        'content': 'no-cache'
+        'content': 'no-cache, no-store, must-revalidate'
     }]
 )
 server = app.server
