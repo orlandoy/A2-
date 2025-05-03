@@ -1,19 +1,16 @@
-/* 主容器 */
-.dash-app-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+/* 强制禁用缓存 */
+html {
+    max-age: 0;
+    must-revalidate;
 }
 
 /* 表格优化 */
 .dash-table-container .dash-spreadsheet-container {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    font-size: 14px;
 }
 
-/* 响应式调整 */
-@media (max-width: 768px) {
-    .dash-graph {
-        height: 300px !important;
-    }
+/* 按钮悬停效果 */
+.btn-primary:hover {
+    opacity: 0.9;
 }
