@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: dash-data-crud
+    env: docker
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 8050
+
