@@ -5,8 +5,8 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:server --bind 0.0.0.0:$PORT --workers 2
     envVars:
-      - key: PORT
-        value: 10000
+      - key: ENV
+        value: production
     disk:
       name: data_volume
-      mountPath: /data  # 修改挂载路径
+      mountPath: /data  # 必须与DB_PATH中的生产路径一致
