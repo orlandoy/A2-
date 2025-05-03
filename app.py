@@ -1,5 +1,8 @@
+
+
+
 import dash
-from dash import Dash, html, dcc, Input, Output, State, callback
+from dash import Dash, html, dcc, Input, Output, State, callback, dash_table  # 添加 dash_table
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 from datetime import datetime
