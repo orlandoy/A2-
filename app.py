@@ -27,14 +27,23 @@ def init_db():
     ''')
     conn.commit()
     conn.close()
-    print(f"数据库已初始化: {DB_PATH}")  # 日志输出
+    print(f"数据库已初始化: {DB_PATH}")
 
 def load_data():
-    """加载数据到前端"""
-    conn = sqlite3.connect(DB_PATH)
-    df = pd.read_sql("SELECT * FROM records", conn)
-    conn.close()
-    return df.to_dict('records')
+    """安全加载数据（处理表不存在情况）"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        df = pd.read_sql("SELECT * FROM records", conn)
+        return df.to_dict('records')
+    except sqlite3.OperationalError as e:
+        if "no such table" in str(e):
+            init_db()  # 自动修复
+            return []
+        raise
+
+# ===== 确保数据库初始化 =====
+if not os.path.exists(DB_PATH):
+    init_db()
 
 # ===== 应用初始化 =====
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -86,6 +95,14 @@ def add_row(n_clicks, data):
 def update_table(data):
     return data
 
+# ===== 初始数据加载回调 =====
+@app.callback(
+    Output('storage', 'data', allow_duplicate=True),
+    Input('url', 'pathname'),
+    prevent_initial_call=True
+)
+def initial_load(_):
+    return load_data()
+
 if __name__ == '__main__':
-    init_db()
     app.run_server(debug=True)
