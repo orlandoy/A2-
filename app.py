@@ -21,6 +21,8 @@ app = Dash(
 
 app.title = "生产级数据管理面板"
 app.config.prevent_initial_callbacks = 'initial_duplicate'
+
+app.config.prevent_initial_callbacks = 'initial_duplicate'
 app.layout = layout
 
 # 主回调：处理添加、保存、删除行与图表更新
