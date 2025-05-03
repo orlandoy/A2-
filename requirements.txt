@@ -1,6 +1,7 @@
 dash==2.11.0
 dash-renderer==1.9.1
 dash-bootstrap-components==1.4.0
-pandas==2.0.0
+pandas==2.0.3  # 明确指定pandas版本
+numpy==1.24.3  # 兼容pandas 2.0.x的稳定版本
 gunicorn==20.1.0
-sqlalchemy==2.0.0  # 更安全的数据库操作
+sqlalchemy==2.0.0
