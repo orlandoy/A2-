@@ -2,29 +2,15 @@ services:
   - type: web
     name: dash-prod
     env: python
-    region: singapore
-    plan: free
-    
-   buildCommand: |
-      pip install -r requirements.txt &&
-      mkdir -p assets/dash-renderer &&
-      wget -O assets/dash-renderer/dash_renderer.v1_9_1.min.js https://cdn.jsdelivr.net/npm/dash-renderer@1.9.1/dash_renderer.min.js &&
-      find assets/ -type f -exec chmod 644 {} \;
-    
-    startCommand: |
-      python -c "from app import init_db; init_db()" &&
-      gunicorn app:server --bind 0.0.0.0:$PORT --workers 2 --timeout 120
-    
+    buildCommand: |
+      pip install -r requirements.txt
+      python -c "from app import init_db; init_db()"
+    startCommand: gunicorn app:server --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     envVars:
-      - key: ENV
-        value: production
       - key: PORT
         value: 10000
-    
+      - key: ENV
+        value: production
     disk:
       name: data_volume
       mountPath: /data
-      sizeGB: 1
-    
-    healthCheckPath: /_dash-layout
-    healthCheckTimeoutSeconds: 30
