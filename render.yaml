@@ -5,10 +5,12 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: |
       python -c "from app import init_db; init_db()" && 
-      gunicorn app:server --bind 0.0.0.0:$PORT --workers 2
+      gunicorn app:server --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     envVars:
       - key: ENV
         value: production
+      - key: PORT
+        value: 10000
     disk:
       name: data_volume
       mountPath: /data
