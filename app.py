@@ -39,7 +39,20 @@ def init_db():
     finally:
         if 'conn' in locals():
             conn.close()
+# 在应用启动前强制初始化数据库
+def check_database():
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='records'")
+        if not cursor.fetchone():
+            init_db()  # 如果表不存在则初始化
+        conn.close()
+    except Exception as e:
+        print(f"❌ 数据库检查失败: {e}")
+        raise
 
+check_database()  # 启动应用前执行
 # ===== 先初始化数据库再创建应用 =====
 if not init_db():
     raise RuntimeError("数据库初始化失败")
