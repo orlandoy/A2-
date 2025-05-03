@@ -1,5 +1,6 @@
-import numpy as np
-    print(f"NumPy版本: {np.__version__}")
+import numpy as np  # 新增的导入
+print(f"NumPy版本: {np.__version__}")  # 确保这行没有缩进！
+
 import dash
 from dash import Dash, html, dcc, Input, Output, callback, dash_table
 import dash_bootstrap_components as dbc
@@ -8,6 +9,8 @@ import pandas as pd
 import os
 from pathlib import Path
 from datetime import datetime
+
+
 
 # ===== 数据库配置 =====
 BASE_DIR = Path(__file__).parent.resolve()
