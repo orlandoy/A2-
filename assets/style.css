@@ -1,61 +1,18 @@
-/* ===== 全局样式 ===== */
-html, body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
-}
-
-/* ===== 主容器 ===== */
-#react-entry-point {
-  min-height: 100vh;
-  padding: 20px;
-  background-color: #f8f9fa;
-}
-
-/* ===== 表格样式 ===== */
-.dash-table-container {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  margin-top: 20px;
-}
-
-.dash-header {
-  background-color: #f8f9fa !important;
-  font-weight: 600 !important;
-}
-
-.dash-cell {
-  padding: 12px 8px !important;
-}
-
-/* ===== 按钮样式 ===== */
-.dbc-button {
-  transition: all 0.3s ease;
-  border-radius: 4px !important;
-  font-weight: 500 !important;
-}
-
-.dbc-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-/* ===== 响应式调整 ===== */
-@media (max-width: 768px) {
-  .dash-table-container {
-    font-size: 13px;
-  }
-  
-  .dbc-button {
-    padding: 8px 12px;
-    font-size: 14px;
-  }
-}
-
-/* ===== 强制禁用缓存 ===== */
-@import url("https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/default.min.css");
+/* 禁用缓存 */
 html {
-  max-age: 0;
-  must-revalidate;
+    max-age: 0;
+    must-revalidate;
+}
+
+/* 按钮悬停效果 */
+.dbc-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+/* 表格优化 */
+.dash-table-container .dash-spreadsheet-container {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
 }
