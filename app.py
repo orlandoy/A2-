@@ -1,7 +1,7 @@
 import dash
 from dash import Dash, html, dcc, Input, Output, State, callback, dash_table
 import dash_bootstrap_components as dbc
-import sqlite3
+import sqlite3  # Python内置库，无需安装
 import pandas as pd
 import os
 from pathlib import Path
@@ -12,8 +12,11 @@ BASE_DIR = Path(__file__).parent.resolve()
 DB_PATH = str(BASE_DIR / "data.db") if os.environ.get("ENV") != "production" else "/data/data.db"
 
 def init_db():
-    """初始化数据库表结构"""
+    """初始化数据库（自动创建目录）"""
     try:
+        if os.environ.get("ENV") != "production":
+            os.makedirs(BASE_DIR, exist_ok=True)
+        
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         c.execute('''
@@ -27,7 +30,7 @@ def init_db():
             )
         ''')
         conn.commit()
-        print(f"✅ 数据库已初始化: {DB_PATH}")
+        print(f"✅ 数据库已初始化 | SQLite版本: {sqlite3.sqlite_version} | 路径: {DB_PATH}")
     except Exception as e:
         print(f"❌ 数据库初始化失败: {str(e)}")
         raise
@@ -36,17 +39,13 @@ def init_db():
             conn.close()
 
 # ===== 应用初始化 =====
-init_db()  # 启动时初始化数据库
+init_db()  # 启动时自动初始化
 
 app = Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     assets_folder="assets",
-    serve_locally=True,
-    meta_tags=[{
-        'http-equiv': 'cache-control',
-        'content': 'no-cache, no-store, must-revalidate'
-    }]
+    serve_locally=True
 )
 server = app.server
 
@@ -93,17 +92,16 @@ def add_record(n_clicks, current_data):
         '状态': '进行中',
         '采集时间': datetime.now().strftime("%Y-%m-%d %H:%M")
     }
-    print(f"添加记录: {new_record}")  # 服务端日志输出
-    return current_data + [new_record]
+    print(f"添加记录: {new_record}")
+    return current_data + [new_record] if current_data else [new_record]
 
 @app.callback(
     Output('table', 'data'),
     Input('storage', 'data')
 )
 def update_table(data):
-    return data or []  # 确保始终返回列表
+    return data or []
 
-# ===== 启动应用 =====
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8050))
     app.run_server(host='0.0.0.0', port=port, debug=False)
