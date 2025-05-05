@@ -8,16 +8,14 @@ from pathlib import Path
 from datetime import datetime
 
 # ===== 数据库配置 =====
+# ===== 数据库配置 =====
 BASE_DIR = Path(__file__).parent.resolve()
-# Render 生产环境使用持久化路径，本地开发使用项目路径
-DB_PATH = "/data/data.db" if os.environ.get("RENDER") else str(BASE_DIR / "data.db")
+# Render 环境使用 /tmp（临时）或持久化磁盘路径
+DB_PATH = "/tmp/data.db" if os.environ.get("RENDER") else str(BASE_DIR / "data.db")
 
 def init_db():
-    """初始化数据库（自动创建目录）"""
+    """初始化数据库"""
     try:
-        if os.environ.get("RENDER"):
-            os.makedirs("/data", exist_ok=True)  # Render 需要手动创建目录
-        
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         c.execute('''
