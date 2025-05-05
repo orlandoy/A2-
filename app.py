@@ -9,7 +9,6 @@ from datetime import datetime
 
 # ===== 数据库配置 =====
 BASE_DIR = Path(__file__).parent.resolve()
-# Render 生产环境使用 /tmp（临时）或配置持久化磁盘（如 /data）
 DB_PATH = "/tmp/data.db" if os.environ.get("RENDER") else str(BASE_DIR / "data.db")
 
 def init_db():
@@ -42,6 +41,7 @@ init_db()
 app = Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
+    # 移除了可能导致问题的 assets_folder 参数
     suppress_callback_exceptions=True
 )
 server = app.server
@@ -66,7 +66,7 @@ app.layout = html.Div([
                 'options': [{'label': i, 'value': i} for i in ["进行中", "已完成", "已暂停"]]
             }
         },
-        data=[],  # 初始为空
+        data=[],
         style_table={'overflowX': 'auto'},
         style_cell={'textAlign': 'center', 'padding': '8px'},
         editable=True,
@@ -108,7 +108,7 @@ def save_data(n_clicks, data):
     try:
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
-        c.execute("DELETE FROM records")  # 清空旧数据
+        c.execute("DELETE FROM records")
         
         for record in data:
             c.execute(
@@ -125,7 +125,7 @@ def save_data(n_clicks, data):
 
 @app.callback(
     Output('storage', 'data'),
-    Input('table', 'data'),  # 初始加载触发
+    Input('table', 'data'),
     State('storage', 'data'),
     prevent_initial_call=False
 )
