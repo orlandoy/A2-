@@ -1,7 +1,7 @@
 import dash
 from dash import Dash, html, dcc, Input, Output, State, callback, dash_table
 import dash_bootstrap_components as dbc
-import sqlite3  # Python内置库，无需安装
+import sqlite3
 import pandas as pd
 import os
 from pathlib import Path
@@ -9,13 +9,14 @@ from datetime import datetime
 
 # ===== 数据库配置 =====
 BASE_DIR = Path(__file__).parent.resolve()
-DB_PATH = str(BASE_DIR / "data.db") if os.environ.get("ENV") != "production" else "/data/data.db"
+# Render 生产环境使用持久化路径，本地开发使用项目路径
+DB_PATH = "/data/data.db" if os.environ.get("RENDER") else str(BASE_DIR / "data.db")
 
 def init_db():
     """初始化数据库（自动创建目录）"""
     try:
-        if os.environ.get("ENV") != "production":
-            os.makedirs(BASE_DIR, exist_ok=True)
+        if os.environ.get("RENDER"):
+            os.makedirs("/data", exist_ok=True)  # Render 需要手动创建目录
         
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
@@ -30,7 +31,7 @@ def init_db():
             )
         ''')
         conn.commit()
-        print(f"✅ 数据库已初始化 | SQLite版本: {sqlite3.sqlite_version} | 路径: {DB_PATH}")
+        print(f"✅ 数据库已初始化 | 路径: {DB_PATH}")
     except Exception as e:
         print(f"❌ 数据库初始化失败: {str(e)}")
         raise
@@ -51,10 +52,11 @@ server = app.server
 
 # ===== 布局定义 =====
 app.layout = html.Div([
-    dcc.Store(id='storage', data=[]),
+    dcc.Store(id='storage', data=[], storage_type='memory'),
     dbc.Row([
         dbc.Col(dbc.Button("+ 添加记录", id="add-btn", color="primary", className="me-2", n_clicks=0)),
-        dbc.Col(dbc.Button("💾 保存数据", id="save-btn", color="success"))
+        dbc.Col(dbc.Button("💾 保存数据", id="save-btn", color="success", n_clicks=0)),
+        dbc.Col(html.Div(id='save-status'))  # 保存状态提示
     ], className="mb-3"),
     dash_table.DataTable(
         id='table',
@@ -101,6 +103,52 @@ def add_record(n_clicks, current_data):
 )
 def update_table(data):
     return data or []
+
+@app.callback(
+    Output('save-status', 'children'),
+    Input('save-btn', 'n_clicks'),
+    State('storage', 'data'),
+    prevent_initial_call=True
+)
+def save_data(n_clicks, data):
+    if not n_clicks or not data:
+        raise dash.exceptions.PreventUpdate
+    
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        df = pd.DataFrame(data)
+        
+        # 清空旧数据并写入新数据（根据需求调整）
+        conn.cursor().execute("DELETE FROM records")
+        df.to_sql('records', conn, if_exists='append', index=False)
+        conn.commit()
+        
+        msg = f"✅ 保存成功：{len(data)} 条记录"
+        print(msg)
+        return dbc.Alert(msg, color="success", duration=3000)
+    except Exception as e:
+        msg = f"❌ 保存失败: {str(e)}"
+        print(msg)
+        return dbc.Alert(msg, color="danger", duration=3000)
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
+@app.callback(
+    Output('storage', 'data'),
+    Input('table', 'data')  # 页面加载时触发
+)
+def load_data(_):
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        df = pd.read_sql("SELECT * FROM records", conn)
+        return df.to_dict('records')
+    except Exception as e:
+        print(f"❌ 加载数据失败: {str(e)}")
+        return []
+    finally:
+        if 'conn' in locals():
+            conn.close()
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8050))
